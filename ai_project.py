@@ -9,6 +9,7 @@ Original file is located at
 
 pip install tf_siren
 
+#importing libraries
 import cv2
 import matplotlib.pyplot as plt
 import tensorflow as tf
@@ -19,7 +20,8 @@ from math import atan2
 from tf_siren import SIRENModel
 from skimage import io
 
-img=io.imread("https://wallpaperaccess.com/full/477393.jpg")
+#Reading the image to a numpy array
+img=io.imread("https://wallpaperaccess.com/full/477393.jpg") 
 data=np.array(img)
 data.shape
 
@@ -27,6 +29,7 @@ sizex, sizey,value=data.shape
 X=[]
 Y=[]
 
+#To Get the Input Data
 for i in range(sizex):
     for j in range(sizey):
         x0 = i + 0.5
@@ -35,6 +38,7 @@ for i in range(sizex):
         y = (y0 - sizey / 2)
         X.append((x0, y0, sizex - x0, sizey - y0, (x**2+y**2)**(1/2), atan2(y0, x0)))
 
+#To Get the value of each pixel        
 for i in data:
     for j in i:
         Y.append(j)
@@ -42,20 +46,21 @@ for i in data:
 X=np.array(X)
 Y=np.array(Y)
 
+#Defining the training and testing data
 x_train=X
 y_train=Y/255.0
 x_test=X
 
+#Defining the model
 model=keras.Sequential()
-model.add(layers.Dense(256, input_dim=6, activation="sine"))
-model.add(layers.Dense(128, activation="sine"))
-model.add(layers.Dense(32, activation="sine"))
+model.add(layers.Dense(4096, input_dim=6, activation="sine"))
 model.add(layers.Dense(3, activation="sigmoid"))
 model.summary()
 
 from google.colab import drive
 drive.mount('/content/gdrive')
 
+#saving weights of the model
 model.save_weights('/content/sample_data/wgt/cp.h5')
 
 model.compile(loss=keras.losses.MeanSquaredError(),
@@ -63,6 +68,7 @@ model.compile(loss=keras.losses.MeanSquaredError(),
 
 model.fit(x_train, y_train, batch_size=32768, epochs=700, shuffle=True)
 
+#Predicting the image
 end_img=model.predict(x_test)
 end_img=end_img*255.0
 end_img=end_img.reshape(sizex,sizey,3)
@@ -70,17 +76,11 @@ end_img = end_img.astype(np.uint8)
 end_img=np.array(end_img)
 end_img
 
+#To show the predicted image
 plt.imshow(cv2.cvtColor(end_img, cv2.COLOR_BGR2RGB))
 plt.show()
 
+#To predict the input image
 plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
 
-import skimage
-from skimage.measure import compare_ssim
-
-image=cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-end_image=cv2.cvtColor(end_img, cv2.COLOR_BGR2GRAY)
-(score, diff) = compare_ssim(image, end_image, full=True)
-diff = (diff * 255).astype("uint8")
-print("SSIM: {}".format(score))
 
