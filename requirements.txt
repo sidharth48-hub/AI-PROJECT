@@ -1,0 +1,5 @@
+tensorflow==2.5.0rc0
+opencv-python==4.4.0.46
+tf_siren==0.0.5
+numpy==1.19.3
+matplotlib==3.4.1
